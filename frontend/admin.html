@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | QuizMaster</title>
+  <link rel="stylesheet" href="css/index.css">
+  <script>
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.classList.add('light-theme');
+    }
+  </script>
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 900px) {
+      .auth-page {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .auth-hero {
+      position: relative;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 4rem;
+      text-align: center;
+      background: radial-gradient(circle at center, rgba(30, 215, 96, 0.1) 0%, transparent 70%);
+      overflow: hidden;
+    }
+
+    @media (min-width: 900px) {
+      .auth-hero {
+        display: flex;
+      }
+    }
+
+    .auth-hero-title {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      z-index: 10;
+    }
+
+    .auth-form-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 450px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .floating-icons-admin {
+      position: absolute;
+      top: 5%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .icon-shield {
+      position: absolute;
+      top: 15%;
+      left: 40%;
+      width: 140px;
+      animation: float 6s ease-in-out infinite;
+      transform: rotate(-10deg);
+      filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
+    }
+
+    /* .icon-chart {
+      position: absolute;
+      bottom: 25%;
+      right: 15%;
+      width: 180px;
+      animation: float-reverse 7s ease-in-out infinite;
+      transform: rotate(15deg);
+      filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
+    } */
+  </style>
+</head>
+
+<body>
+
+  <div class="auth-page">
+    <div style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 100;">
+      <button id="theme-toggle-btn" class="btn btn-outline" style="padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-primary);">☀️</button>
+    </div>
+
+    <!-- Left: Hero Section -->
+    <div class="auth-hero animate-fade-in">
+      <div class="floating-icons-admin">
+        <img src="images/game.png" alt="Shield" class="icon-shield">
+        <!-- <img src="images/game.png" alt="Chart" class="icon-chart"> -->
+      </div>
+      <h1 class="auth-hero-title">Command <span class="text-gradient">Center</span></h1>
+      <p style="color: var(--text-secondary); max-width: 400px; font-size: 1.1rem; z-index: 10;">
+        Securely manage your quizzes, view analytics, and control live sessions.
+      </p>
+    </div>
+
+    <!-- Right: Form Section -->
+    <div class="auth-form-container">
+      <!-- subtle glow behind the card -->
+      <div class="auth-glow"
+        style="position: absolute; width: 300px; height: 300px; background: var(--primary-glow); filter: blur(80px); border-radius: 50%; z-index: 0; opacity: 0.5;">
+      </div>
+
+      <div class="auth-box animate-fade-in" style="animation-delay: 0.2s;">
+        <div class="logo flex-center" style="margin-bottom: 2rem;">
+          <img src="./images/logo.png" alt="SCALive Logo" class="logo-icon" style="width: 180px;" />
+        </div>
+
+        <div class="glass-card" style="padding: 3rem 2.5rem;">
+          <h2 style="margin-bottom: 0.5rem; font-size: 2rem;">Welcome Back</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 2.5rem;">Sign in to access the admin portal.</p>
+
+          <form id="login-form">
+            <div style="margin-bottom: 1.5rem;">
+              <label
+                style="display: block; margin-bottom: 0.75rem; font-size: 0.95rem; font-weight: 500; color: var(--text-primary);">Admin
+                Email</label>
+              <input type="email" id="login-email" class="form-control" placeholder="admin@gmail.com" required
+                style="padding: 1rem;">
+            </div>
+            <div style="margin-bottom: 2.5rem;">
+              <label
+                style="display: block; margin-bottom: 0.75rem; font-size: 0.95rem; font-weight: 500; color: var(--text-primary);">Password</label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required
+                style="padding: 1rem;">
+            </div>
+            <button type="submit" class="btn btn-primary"
+              style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border-radius: 12px; font-weight: 700;">
+              Sign In to Dashboard
+            </button>
+          </form>
+          <p id="auth-error"
+            style="color: #ff4d4d; margin-top: 1.5rem; text-align: center; display: none; font-weight: 500;"></p>
+        </div>
+
+        <p style="text-align: center; margin-top: 2rem; color: var(--text-secondary);">
+          <a href="index.html"
+            style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: color 0.3s;"
+            onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-secondary)'">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M19 12H5M12 19l-7-7 7-7"></path>
+            </svg>
+            Back to Student Portal
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+
+</html>

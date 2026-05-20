@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Quiz | QuizMaster</title>
+  <link rel="stylesheet" href="css/index.css">
+  <script>
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.classList.add('light-theme');
+    }
+  </script>
+  <style>
+    .quiz-layout {
+      max-width: 900px;
+      margin: 2rem auto;
+      min-height: calc(100vh - 4rem);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .timer-ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 8px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      box-shadow: var(--neon-shadow);
+      margin-bottom: 2rem;
+      background: var(--bg-darker);
+    }
+
+    .question-box {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .option-card {
+      padding: 2rem;
+      text-align: left;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+
+    .option-card:hover:not(:disabled) {
+      transform: scale(1.02);
+      border-color: var(--primary);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .option-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-glow);
+      box-shadow: var(--neon-shadow);
+    }
+
+    .option-card.correct {
+      border-color: var(--accent);
+      background: rgba(45, 212, 191, 0.2);
+    }
+
+    .option-card.wrong {
+      border-color: var(--secondary);
+      background: rgba(251, 113, 133, 0.2);
+    }
+
+    .leaderboard-container {
+      margin-top: 3rem;
+    }
+
+    .leaderboard-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+    }
+
+    .rank {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      margin-right: 1rem;
+    }
+
+    .host-controls {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 1rem;
+      z-index: 1000;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Mobile Responsiveness for Quiz Room */
+    @media (max-width: 768px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .host-controls {
+        width: 100%;
+        padding: 0 1rem;
+        bottom: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .host-controls .btn {
+        flex: 1 1 calc(50% - 0.5rem);
+        font-size: 0.85rem;
+        padding: 0.8rem 0.5rem;
+      }
+      #quiz-view > div:first-child {
+        flex-direction: column;
+        align-items: center !important;
+        gap: 1rem;
+      }
+      #quiz-view > div:first-child > div:last-child {
+        width: 100%;
+        text-align: center;
+      }
+      #lobby-title {
+        font-size: 2.5rem !important;
+      }
+      .question-box h2 {
+        font-size: 1.5rem !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 100;">
+    <button id="theme-toggle-btn" class="btn btn-outline" style="padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">☀️</button>
+  </div>
+
+  <div class="container quiz-layout">
+    <!-- Lobby View -->
+    <div id="lobby-view" class="flex-center animate-fade-in" style="flex-direction: column; flex-grow: 1;">
+      <h1 id="lobby-title" class="text-gradient" style="font-size: 3.5rem; margin-bottom: 1rem;">Waiting for Host...
+      </h1>
+      <p id="lobby-subtitle" style="color: var(--text-secondary); font-size: 1.25rem; margin-bottom: 3rem;">Join Code:
+        <span style="color: var(--primary); font-weight: 800;">---</span></p>
+
+      <div class="glass-card" style="width: 100%; max-width: 500px; text-align: center;">
+        <h3 style="margin-bottom: 1.5rem;">Participants joined: <span id="participant-count"
+            class="text-gradient">0</span></h3>
+
+
+        <!-- Large Start Button for Admin in Lobby -->
+        <div id="lobby-admin-action" class="hidden"
+          style="margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+          <button class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.5rem; width: 100%;"
+            onclick="startNextQuestion()">🚀 Launch First Question</button>
+        </div>
+      </div>
+
+      <p id="student-wait-text" style="margin-top: 2rem; color: var(--text-muted);">The quiz will start as soon as the
+        host is ready.</p>
+    </div>
+
+    <!-- Question View -->
+    <div id="question-view" class="hidden animate-fade-in">
+      <div class="flex-center" style="flex-direction: column;">
+        <div class="timer-ring">
+          <span id="q-timer">30</span>
+        </div>
+        <div class="question-box">
+          <p id="q-marks" class="badge badge-live" style="margin-bottom: 1rem;">10 Points</p>
+          <h1 id="q-text" style="font-size: 2.5rem; line-height: 1.2;">What is the capital of France?</h1>
+        </div>
+      </div>
+
+      <div class="options-grid" id="options-container">
+        <!-- Options generated here -->
+      </div>
+
+      <div id="answer-feedback" style="text-align: center; margin-top: 2rem; font-size: 1.5rem; font-weight: 700;">
+      </div>
+    </div>
+
+    <!-- Answer Received / Waiting View -->
+    <div id="wait-view" class="hidden animate-fade-in" style="text-align: center; margin-top: 5rem;">
+      <div class="glass-card" style="padding: 4rem; display: inline-block;">
+        <div id="wait-icon" style="font-size: 5rem; margin-bottom: 1.5rem;">✨</div>
+        <h2 id="wait-title" class="text-gradient" style="font-size: 2.5rem; margin-bottom: 1rem;">Answer Received!</h2>
+        <p id="wait-message" style="color: var(--text-secondary); font-size: 1.25rem;">Great job! Sit tight while the
+          others finish...</p>
+        <div class="loader" style="margin: 2rem auto;"></div>
+      </div>
+    </div>
+
+    <!-- Leaderboard View -->
+    <div id="leaderboard-view" class="hidden animate-fade-in">
+      <h1 class="text-gradient" style="text-align: center; margin-bottom: 3rem; font-size: 3rem;">Leaderboard</h1>
+      <div id="leaderboard-list" class="leaderboard-container">
+        <!-- Default state before any scores arrive -->
+        <p style="text-align:center; color:var(--text-muted);">Awaiting scores...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Controls (Sticky Bottom) -->
+  <div id="admin-controls" class="host-controls hidden">
+    <div class="glass-card" style="display: flex; gap: 1rem; padding: 0.75rem 1.5rem; border-radius: 9999px;">
+      <button id="admin-start-btn" class="btn btn-primary" onclick="startNextQuestion()">Start Quiz</button>
+      <button class="btn btn-outline" onclick="showLobbyView()">Lobby</button>
+      <button class="btn btn-outline" onclick="showLeaderboardView()">Standings</button>
+      <button class="btn btn-outline" style="color: red;" onclick="endQuiz()">End Session</button>
+    </div>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="js/quiz.js"></script>
+</body>
+
+</html>
