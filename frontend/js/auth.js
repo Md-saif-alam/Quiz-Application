@@ -1,6 +1,4 @@
-// Authentication & Auth UI Logic (Updated for current backend)
-
-const API_BASE = `http://${window.location.hostname}:4000/api`;
+const API_BASE = `https://quiz-application-qu0q.onrender.com/api`;
 
 // --- Auth Toggle & UI ---
 

@@ -1,6 +1,4 @@
-// Real-Time Quiz Room Logic (Updated for current backend)
-
-const socket = io(`http://${window.location.hostname}:4000`);
+const socket = io(`https://quiz-application-qu0q.onrender.com`);
 const user = JSON.parse(localStorage.getItem('user'));
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -82,7 +80,7 @@ if (isAdmin) {
 
     if (currentQuizId) {
         const token = localStorage.getItem('token');
-        fetch(`http://${window.location.hostname}:4000/api/quizzes/${currentQuizId}`, {
+        fetch(`https://quiz-application-qu0q.onrender.com/api/quizzes/${currentQuizId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
