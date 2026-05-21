@@ -1,4 +1,4 @@
-const API_BASE = `https://quiz-application-qu0q.onrender.com/api`;
+const API_BASE = `https://quiz-application-backend-1jiq.onrender.com/api`;
 
 // --- Auth Toggle & UI ---
 

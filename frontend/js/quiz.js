@@ -1,4 +1,4 @@
-const socket = io(`https://quiz-application-qu0q.onrender.com`);
+const socket = io(`https://quiz-application-backend-1jiq.onrender.com`);
 const user = JSON.parse(localStorage.getItem('user'));
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -80,7 +80,7 @@ if (isAdmin) {
 
     if (currentQuizId) {
         const token = localStorage.getItem('token');
-        fetch(`https://quiz-application-qu0q.onrender.com/api/quizzes/${currentQuizId}`, {
+        fetch(`https://quiz-application-backend-1jiq.onrender.com/api/quizzes/${currentQuizId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

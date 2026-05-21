@@ -1,4 +1,4 @@
-const API_URL = `https://quiz-application-qu0q.onrender.com/api`;
+const API_URL = `https://quiz-application-backend-1jiq.onrender.com/api`;
 
 // Simple "Session" state since backend has no JWT
 const user = JSON.parse(localStorage.getItem('user'));
