@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 const API_BASE = `https://quiz-application-backend-1jiq.onrender.com/api`;
+=======
+// Authentication & Auth UI Logic (Updated for current backend)
+
+const API_BASE = `https://quiz-application-qu0q.onrender.com/api`;
+>>>>>>> 6f783e5198e00b2143cf8791c4c431dfd1e62c3b
 
 // --- Auth Toggle & UI ---
 

@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 const API_URL = `https://quiz-application-backend-1jiq.onrender.com/api`;
+=======
+// Admin Dashboard Logic (Updated for current backend)
+
+const API_URL = `https://quiz-application-qu0q.onrender.com/api`;
+>>>>>>> 6f783e5198e00b2143cf8791c4c431dfd1e62c3b
 
 // Simple "Session" state since backend has no JWT
 const user = JSON.parse(localStorage.getItem('user'));
