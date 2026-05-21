@@ -1,6 +1,7 @@
 import Question from "../models/Question.js";
 import evaluateAnswer from "../service/evaluateAnswer.js";
 import updateLeaderboard from "../service/updateLeaderboard.js";
+import User from "../models/User.js";
 
 const questionLeaderboard = {};
 const userStats = {};
@@ -117,10 +118,45 @@ const socketHandler = (io) => {
         });
 
         // END QUIZ
-        socket.on("end-quiz", (joinCode) => {
+        socket.on("end-quiz", async (joinCode) => {
             if (socket.data.role === "admin") {
                 io.to(joinCode).emit("quiz-ended");
                 console.log(`Quiz ${joinCode} ended by admin`);
+                
+                try {
+                    // Delete all participant data from database
+                    await User.deleteMany({ role: "student" });
+                    
+                    // Optional: Clean up memory structures for this quiz
+                    if (quizParticipants[joinCode]) {
+                        delete quizParticipants[joinCode];
+                    }
+                    if (activeQuestions[joinCode]) {
+                        delete activeQuestions[joinCode];
+                    }
+                    console.log("All participant data deleted successfully.");
+                } catch (error) {
+                    console.error("Error deleting participant data:", error);
+                }
+            }
+        });
+
+        // REQUEST FINAL RESULTS
+        socket.on("request-final-results", (joinCode) => {
+            if (socket.data.role === "admin") {
+                const quizUsers = quizParticipants[joinCode] ? quizParticipants[joinCode].map(p => p.username) : [];
+                const finalStats = {};
+                
+                quizUsers.forEach(username => {
+                    if (userStats[username]) {
+                        finalStats[username] = userStats[username];
+                    } else {
+                        // Users who didn't answer anything right
+                        finalStats[username] = { totalCorrect: 0, firstPlaceCount: 0, top3Count: 0 };
+                    }
+                });
+                
+                io.to(joinCode).emit("final-results", finalStats);
             }
         });
 

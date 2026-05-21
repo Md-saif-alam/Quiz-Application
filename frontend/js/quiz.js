@@ -22,11 +22,14 @@ const views = {
     lobby: document.getElementById('lobby-view'),
     question: document.getElementById('question-view'),
     leaderboard: document.getElementById('leaderboard-view'),
-    wait: document.getElementById('wait-view')
+    wait: document.getElementById('wait-view'),
+    'final-results': document.getElementById('final-results-view')
 };
 
 function showView(viewName) {
-    Object.values(views).forEach(v => v.classList.add('hidden'));
+    Object.values(views).forEach(v => {
+        if (v) v.classList.add('hidden');
+    });
     if (views[viewName]) views[viewName].classList.remove('hidden');
 }
 
@@ -198,6 +201,28 @@ socket.on('quiz-ended', () => {
     }
 });
 
+socket.on('final-results', (finalStats) => {
+    showView('final-results');
+    
+    const statsArray = Object.keys(finalStats).map(username => ({
+        username,
+        ...finalStats[username]
+    }));
+    
+    statsArray.sort((a, b) => b.totalCorrect - a.totalCorrect || b.firstPlaceCount - a.firstPlaceCount);
+    
+    const winnerNameEl = document.getElementById('winner-name');
+    const winnerStatsEl = document.getElementById('winner-stats');
+    
+    if (statsArray.length > 0 && statsArray[0].totalCorrect > 0) {
+        if(winnerNameEl) winnerNameEl.innerText = statsArray[0].username;
+        if(winnerStatsEl) winnerStatsEl.innerText = `Total Correct: ${statsArray[0].totalCorrect}`;
+    } else {
+        if(winnerNameEl) winnerNameEl.innerText = "No Winner";
+        if(winnerStatsEl) winnerStatsEl.innerText = "No correct answers";
+    }
+});
+
 // --- Actions ---
 
 function selectOption(questionId, selectedOption, btn) {
@@ -288,8 +313,12 @@ function showLobbyView() {
 }
 
 function endQuiz() {
-    if (confirm('Are you sure you want to end this quiz session?')) {
+    if (confirm('Are you sure you want to completely close this session? All participant data will be deleted.')) {
         socket.emit('end-quiz', joinCode);
         window.location.href = 'admin-dashboard.html';
     }
+}
+
+function requestFinalResults() {
+    socket.emit('request-final-results', joinCode);
 }
