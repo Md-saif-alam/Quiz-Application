@@ -31,54 +31,27 @@ const updateLeaderboard = ({
 
       });
 
-    // TOP 5
-    const top5 =
+    // TOP 10
+    const top10 =
         questionLeaderboard[stateKey]
-        .slice(0, 5);
+        .slice(0, 10);
 
-    // UPDATE USER STATS
-    top5.forEach((user, index) => {
+    // Update the specific user's stats ONLY ONCE for this correct answer
+    if(!userStats[result.username]) {
+        userStats[result.username] = {
+            totalCorrect: 0,
+            firstPlaceCount: 0,
+            top3Count: 0,
+            totalTime: 0
+        };
+    }
 
-        // CREATE USER
-        if(!userStats[user.username]) {
-
-            userStats[user.username] = {
-
-                totalCorrect: 0,
-                firstPlaceCount: 0,
-                top3Count: 0
-
-            };
-
-        }
-
-        // TOTAL CORRECT
-        userStats[user.username]
-          .totalCorrect += 1;
-
-        // FIRST PLACE
-        if(index === 0) {
-
-            userStats[user.username]
-              .firstPlaceCount += 1;
-
-        }
-
-        // TOP 3
-        if(index < 3) {
-
-            userStats[user.username]
-              .top3Count += 1;
-
-        }
-
-    });
+    userStats[result.username].totalCorrect += 1;
+    userStats[result.username].totalTime += result.timeTaken;
 
     return {
-
-        top5,
+        top10,
         userStats
-
     };
 
 };

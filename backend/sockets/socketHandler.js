@@ -101,7 +101,7 @@ const socketHandler = (io) => {
                     userStats
                 });
 
-                // SEND TOP 5 LEADERBOARD
+                // SEND TOP 10 LEADERBOARD
                 io.to(data.joinCode)
                     .emit("leaderboard-update", leaderboard);
 
@@ -148,11 +148,22 @@ const socketHandler = (io) => {
                 const finalStats = {};
                 
                 quizUsers.forEach(username => {
-                    if (userStats[username]) {
-                        finalStats[username] = userStats[username];
-                    } else {
-                        // Users who didn't answer anything right
-                        finalStats[username] = { totalCorrect: 0, firstPlaceCount: 0, top3Count: 0 };
+                    finalStats[username] = { totalCorrect: 0, firstPlaceCount: 0, top3Count: 0, totalTime: 0 };
+                });
+                
+                // Calculate accurate final stats from questionLeaderboard
+                Object.keys(questionLeaderboard).forEach(key => {
+                    if (key.startsWith(`${joinCode}_`)) {
+                        const board = questionLeaderboard[key];
+                        board.forEach((entry, idx) => {
+                            if (!finalStats[entry.username]) {
+                                finalStats[entry.username] = { totalCorrect: 0, firstPlaceCount: 0, top3Count: 0, totalTime: 0 };
+                            }
+                            finalStats[entry.username].totalCorrect += 1;
+                            finalStats[entry.username].totalTime += entry.timeTaken;
+                            if (idx === 0) finalStats[entry.username].firstPlaceCount += 1;
+                            if (idx < 3) finalStats[entry.username].top3Count += 1;
+                        });
                     }
                 });
                 

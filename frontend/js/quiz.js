@@ -133,7 +133,10 @@ socket.on('new-question', (question) => {
     showView('question');
 
     const feedback = document.getElementById('answer-feedback');
-    feedback.innerText = '';
+    if (feedback) feedback.innerText = '';
+
+    // CLEAR LEADERBOARD FROM PREVIOUS QUESTION
+    renderCurrentQuestionLeaderboard([]);
 
     document.getElementById('q-text').innerText = question.questionText;
     document.getElementById('q-marks').innerText = `${question.points || 10} Points`;
@@ -184,9 +187,9 @@ socket.on('new-question', (question) => {
     }, 1000);
 });
 
-socket.on('leaderboard-update', ({ top5, userStats }) => {
+socket.on('leaderboard-update', ({ top10, userStats }) => {
     // Render current question speed stats
-    renderCurrentQuestionLeaderboard(top5);
+    renderCurrentQuestionLeaderboard(top10);
 });
 
 // Admin only: view incoming answers
@@ -209,7 +212,7 @@ socket.on('final-results', (finalStats) => {
         ...finalStats[username]
     }));
     
-    statsArray.sort((a, b) => b.totalCorrect - a.totalCorrect || b.firstPlaceCount - a.firstPlaceCount);
+    statsArray.sort((a, b) => b.totalCorrect - a.totalCorrect || b.firstPlaceCount - a.firstPlaceCount || a.totalTime - b.totalTime);
     
     const winnerNameEl = document.getElementById('winner-name');
     const winnerStatsEl = document.getElementById('winner-stats');
@@ -257,17 +260,17 @@ function disableAllOptions() {
     btns.forEach(b => b.disabled = true);
 }
 
-function renderCurrentQuestionLeaderboard(top5) {
+function renderCurrentQuestionLeaderboard(top10) {
     const list = document.getElementById('leaderboard-list');
     if (!list) return;
     list.innerHTML = '';
 
-    if (!top5 || top5.length === 0) {
+    if (!top10 || top10.length === 0) {
         list.innerHTML = '<p style="text-align:center; color:var(--text-muted);">No correct answers yet.</p>';
         return;
     }
 
-    top5.forEach((p, idx) => {
+    top10.forEach((p, idx) => {
         const row = document.createElement('div');
         row.className = 'leaderboard-row animate-fade-in';
         row.innerHTML = `
