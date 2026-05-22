@@ -100,3 +100,14 @@ export const createQuestion = async (req,res) => {
         })
     }
 };
+
+export const deleteQuestion = async (req, res) => {
+    try {
+        const question = await Question.findByIdAndDelete(req.params.id);
+        if (!question) return res.status(404).json({ message: "Question not found" });
+        // Also delete associated questions
+        res.status(200).json({ message: "Question deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
