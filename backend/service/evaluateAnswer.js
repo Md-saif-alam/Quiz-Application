@@ -27,8 +27,8 @@ const evaluateAnswer = async({
     const elapsedTime =
         (currentTime - activeQuestion.startedAt) / 1000;
 
-    // TIMER ENDED
-    if(elapsedTime > question.timeLimit) {
+    // TIMER ENDED (Allow 2 second grace period for network latency)
+    if(elapsedTime > question.timeLimit + 2) {
 
         return null;
 
@@ -60,7 +60,7 @@ const evaluateAnswer = async({
 
     // CHECK ANSWER
     const isCorrect =
-        data.selectedOption === question.correctAnswer;
+        Number(data.selectedOption) === Number(question.correctAnswer);
 
     // WRONG ANSWER
     if(!isCorrect) {

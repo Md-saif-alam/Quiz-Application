@@ -50,7 +50,8 @@ const updateLeaderboard = ({
     userStats[result.username].totalTime += result.timeTaken;
 
     return {
-        top10,
+        top5: top10, // Backwards compatibility for cached clients
+        top10: top10,
         userStats
     };
 
