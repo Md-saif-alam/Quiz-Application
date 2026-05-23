@@ -1,4 +1,6 @@
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : 'https://quiz-application-production-c0e1.up.railway.app/api';
+const hostname = window.location.hostname;
+const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || window.location.protocol === 'file:';
+const API_URL = isLocal ? `http://${hostname || 'localhost'}:5000/api` : 'https://quiz-application-production-c0e1.up.railway.app/api';
 
 // Simple "Session" state since backend has no JWT
 const user = JSON.parse(localStorage.getItem('user'));
