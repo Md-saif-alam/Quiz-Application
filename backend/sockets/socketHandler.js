@@ -7,14 +7,13 @@ const questionLeaderboard = {};
 const userStats = {};
 const activeQuestions = {};
 const quizParticipants = {};
+const quizAdmins = {};
 
 const socketHandler = (io) => {
 
     io.on("connection", (socket) => {
 
         console.log("User connected:", socket.id);
-
-        let adminSocketId = null;
 
         // JOIN QUIZ
         socket.on("join-quiz", ({ joinCode, username, role }) => {
@@ -25,7 +24,7 @@ const socketHandler = (io) => {
             socket.data.role = role;
 
             if (role === "admin") {
-                adminSocketId = socket.id;
+                quizAdmins[joinCode] = socket.id;
             }
 
             if (!quizParticipants[joinCode]) {
@@ -106,8 +105,11 @@ const socketHandler = (io) => {
                     .emit("leaderboard-update", leaderboard);
 
                 // SEND ANSWER ONLY TO ADMIN
-                io.to(adminSocketId)
-                    .emit("answer-received", result);
+                const adminSocketId = quizAdmins[data.joinCode];
+                if (adminSocketId) {
+                    io.to(adminSocketId)
+                        .emit("answer-received", result);
+                }
 
             } catch (error) {
 
