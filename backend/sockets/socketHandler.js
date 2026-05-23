@@ -11,20 +11,11 @@ const quizAdmins = {};
 
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
-
     // JOIN QUIZ
     socket.on("join-quiz", ({ joinCode, username, role }) => {
-      console.log(`[JOIN REQUEST] ${role} ${username} -> ${joinCode}`);
-
       if (!joinCode) {
-        console.log("Join code missing");
         return;
       }
-
-      console.log(
-        `[JOIN REQUEST] role=${role} username=${username} joinCode=${joinCode}`,
-      );
 
       socket.join(joinCode);
 
@@ -34,8 +25,6 @@ const socketHandler = (io) => {
 
       if (role === "admin") {
         quizAdmins[joinCode] = socket.id;
-
-        console.log(`[ADMIN REGISTERED] ${username}`);
       }
 
       if (!quizParticipants[joinCode]) {
@@ -52,17 +41,8 @@ const socketHandler = (io) => {
             username,
             socketId: socket.id,
           });
-
-          console.log(`[PARTICIPANT ADDED] ${username}`);
         }
       }
-
-      console.log(
-        `[ROOM SIZE]`,
-        io.sockets.adapter.rooms.get(joinCode)?.size || 0,
-      );
-
-      console.log(`[PARTICIPANT COUNT]`, quizParticipants[joinCode].length);
 
       io.to(joinCode).emit("participants-update", quizParticipants[joinCode]);
     });
@@ -96,10 +76,6 @@ const socketHandler = (io) => {
     // SUBMIT ANSWER
     socket.on("submit-answer", async (data) => {
       try {
-        console.log("================================");
-        console.log("ANSWER RECEIVED");
-        console.log(data);
-
         const result = await evaluateAnswer({
           data,
           socket,
@@ -107,11 +83,7 @@ const socketHandler = (io) => {
           activeQuestions,
         });
 
-        console.log("EVALUATION RESULT:");
-        console.log(result);
-
         if (!result) {
-          console.log("Answer rejected");
           return;
         }
 
@@ -121,22 +93,13 @@ const socketHandler = (io) => {
           userStats,
         });
 
-        console.log("LEADERBOARD GENERATED:");
-        console.log(JSON.stringify(leaderboard, null, 2));
-
         io.to(data.joinCode).emit("leaderboard-update", leaderboard);
-
-        console.log(`leaderboard-update emitted to room ${data.joinCode}`);
 
         const adminSocketId = quizAdmins[data.joinCode];
 
         if (adminSocketId) {
           io.to(adminSocketId).emit("answer-received", result);
-
-          console.log("answer-received sent to admin");
         }
-
-        console.log("================================");
       } catch (error) {
         console.error("SUBMIT ANSWER ERROR:", error);
       }
@@ -146,7 +109,6 @@ const socketHandler = (io) => {
     socket.on("end-quiz", async (joinCode) => {
       if (socket.data.role === "admin") {
         io.to(joinCode).emit("quiz-ended");
-        console.log(`Quiz ${joinCode} ended by admin`);
 
         try {
           // Delete all participant data from database
@@ -174,7 +136,6 @@ const socketHandler = (io) => {
           usernamesToClean.forEach((username) => {
             delete userStats[username];
           });
-          console.log("All participant data deleted successfully.");
         } catch (error) {
           console.error("Error deleting participant data:", error);
         }
@@ -227,14 +188,10 @@ const socketHandler = (io) => {
     socket.on("disconnect", () => {
       const room = socket.data.room;
 
-      console.log("[DISCONNECT]", socket.id, room);
-
       if (room && quizParticipants[room]) {
         quizParticipants[room] = quizParticipants[room].filter(
           (p) => p.socketId !== socket.id,
         );
-
-        console.log(`[UPDATED COUNT]`, quizParticipants[room].length);
 
         io.to(room).emit("participants-update", quizParticipants[room]);
       }

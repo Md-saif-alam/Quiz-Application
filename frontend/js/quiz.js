@@ -1,5 +1,3 @@
-console.log("QUIZ JS STARTED");
-alert("QUIZ JS STARTED");
 const hostname = window.location.hostname;
 const isLocal =
   hostname === "localhost" ||
@@ -100,12 +98,6 @@ if (isAdmin) {
 }
 
 socket.on("connect", () => {
-  console.log("========== ADMIN DEBUG ==========");
-  console.log("isAdmin =", isAdmin);
-  console.log("quizIdParam =", quizIdParam);
-  console.log("joinCode =", joinCode);
-  console.log("socket.id =", socket.id);
-  console.log("================================");
   if (isAdmin) {
     currentQuizId = quizIdParam;
 
@@ -124,22 +116,16 @@ socket.on("connect", () => {
           return res.json();
         })
         .then((data) => {
-          console.log("Quiz API Response:", data);
-
           if (data.content) {
             questionsList = data.content.questions;
 
             activeJoinCode = data.content.joinCode;
-
-            console.log("ADMIN JOINING ROOM:", activeJoinCode);
 
             socket.emit("join-quiz", {
               joinCode: activeJoinCode,
               username: user?.username || "Admin",
               role: "admin",
             });
-
-            console.log("join-quiz emitted successfully");
           }
         })
         .catch((err) => {
@@ -165,8 +151,6 @@ socket.on("connect", () => {
 // --- Socket Listeners ---
 
 socket.on("participants-update", (participants) => {
-  console.log("[PARTICIPANTS UPDATE]", participants);
-
   const participantCount = document.getElementById("participant-count");
 
   if (participantCount) {
@@ -237,20 +221,11 @@ socket.on("new-question", (question) => {
 });
 
 socket.on("leaderboard-update", ({ top10, userStats }) => {
-  console.log("LEADERBOARD UPDATE RECEIVED");
-
-  console.log("TOP10:");
-  console.log(top10);
-
-  console.log("USER STATS:");
-  console.log(userStats);
-
   renderCurrentQuestionLeaderboard(top10);
 });
 
 // Admin only: view incoming answers
 socket.on("answer-received", (result) => {
-  console.log("Answer received:", result);
   // Optionally show a notification or update a live counter
 });
 
@@ -340,7 +315,6 @@ function disableAllOptions() {
 }
 
 function renderCurrentQuestionLeaderboard(top10) {
-  console.log("Rendering leaderboard:", top10);
   const list = document.getElementById("leaderboard-list");
   if (!list) return;
   list.innerHTML = "";
