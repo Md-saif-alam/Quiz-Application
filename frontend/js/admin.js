@@ -1,4 +1,4 @@
-const API_URL = `https://quiz-application-backend-1jiq.onrender.com/api`;
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : 'https://quiz-application-production-c0e1.up.railway.app/api';
 
 // Simple "Session" state since backend has no JWT
 const user = JSON.parse(localStorage.getItem('user'));
@@ -18,7 +18,7 @@ if (userNameEl) userNameEl.innerText = user.username;
 // Logout
 function logout() {
     localStorage.clear();
-    window.location.href = 'index.html';
+    window.location.href = 'admin.html';
 }
 
 // --- View Management ---
@@ -102,7 +102,7 @@ async function loadQuizzes() {
 async function manageQuiz(quizId) {
     currentQuizId = quizId;
     try {
-        const res = await fetch(`${API_URL}/quizzes/${quizId}`, {
+        const res = await fetch(`${API_URL}/quizzes/${quizId}?t=${Date.now()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -151,6 +151,7 @@ async function manageQuiz(quizId) {
     }
 }
 
+// Delete Quiz
 async function deleteQuiz(quizId) {
     if (!confirm('Are you sure you want to delete this quiz? This cannot be undone.')) return;
 
@@ -172,6 +173,34 @@ async function deleteQuiz(quizId) {
         alert('An error occurred while deleting');
     }
 }
+
+// Delete question
+window.deleteQuestion = async function(questionId) {
+    if (!confirm('Are you sure you want to delete this question? This cannot be undone.')) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/question/${questionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (res.ok) {
+            manageQuiz(currentQuizId); // Refresh the manage view to show the updated questions list
+        } else {
+            let errorMsg = 'Failed to delete question';
+            try {
+                const errData = await res.json();
+                if (errData.message) errorMsg += ': ' + errData.message;
+            } catch (e) {}
+            alert(errorMsg);
+        }
+    } catch (err) {
+        console.error('Delete failed', err);
+        alert('An error occurred while deleting');
+    }
+};
 
 // --- Create Quiz ---
 
@@ -275,7 +304,7 @@ function renderQuestions(questions) {
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <h4 style="color: var(--text-primary);">Q${idx + 1}: ${q.questionText}</h4>
-                <button class="btn btn-outline" style="padding: 0.3rem 0.5rem; border-radius: 6px; font-size: 0.75rem;">🗑️</button>
+                <button class="btn btn-outline" style="padding: 0.3rem 0.5rem; border-radius: 6px; font-size: 0.75rem;" onclick="event.stopPropagation(); window.deleteQuestion('${q._id}')">🗑️</button>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;">
                 ${q.options.map((opt, i) => `

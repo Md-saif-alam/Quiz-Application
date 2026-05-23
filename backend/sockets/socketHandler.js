@@ -128,12 +128,23 @@ const socketHandler = (io) => {
                     await User.deleteMany({ role: "student" });
                     
                     // Optional: Clean up memory structures for this quiz
+                    const usernamesToClean = new Set();
                     if (quizParticipants[joinCode]) {
+                        quizParticipants[joinCode].forEach(p => usernamesToClean.add(p.username));
                         delete quizParticipants[joinCode];
                     }
                     if (activeQuestions[joinCode]) {
                         delete activeQuestions[joinCode];
                     }
+                    Object.keys(questionLeaderboard).forEach(key => {
+                        if (key.startsWith(`${joinCode}_`)) {
+                            questionLeaderboard[key].forEach(entry => usernamesToClean.add(entry.username));
+                            delete questionLeaderboard[key];
+                        }
+                    });
+                    usernamesToClean.forEach(username => {
+                        delete userStats[username];
+                    });
                     console.log("All participant data deleted successfully.");
                 } catch (error) {
                     console.error("Error deleting participant data:", error);

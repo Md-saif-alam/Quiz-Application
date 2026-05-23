@@ -1,6 +1,7 @@
 // Real-Time Quiz Room Logic (Updated for current backend)
 
-const socket = io(`https://quiz-application-backend-1jiq.onrender.com`);
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000' : 'https://quiz-application-production-c0e1.up.railway.app';
+const socket = io(BACKEND_URL);
 const user = JSON.parse(localStorage.getItem('user'));
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -85,7 +86,7 @@ if (isAdmin) {
 
     if (currentQuizId) {
         const token = localStorage.getItem('token');
-        fetch(`https://quiz-application-backend-1jiq.onrender.com/api/quizzes/${currentQuizId}`, {
+        fetch(`${BACKEND_URL}/api/quizzes/${currentQuizId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -115,7 +116,7 @@ if (isAdmin) {
     // Student Setup
     if (!joinCode) {
         alert('No join code provided');
-        window.location.href = 'index.html';
+        window.location.href = 'app.php';
     }
     socket.emit('join-quiz', { joinCode, username: user?.username || 'Student', role: 'student' });
 }
@@ -218,8 +219,23 @@ socket.on('final-results', (finalStats) => {
     const winnerStatsEl = document.getElementById('winner-stats');
     
     if (statsArray.length > 0 && statsArray[0].totalCorrect > 0) {
-        if(winnerNameEl) winnerNameEl.innerText = statsArray[0].username;
-        if(winnerStatsEl) winnerStatsEl.innerText = `Total Correct: ${statsArray[0].totalCorrect}`;
+        const topScore = statsArray[0].totalCorrect;
+        const topFirstPlaces = statsArray[0].firstPlaceCount;
+        const topTime = statsArray[0].totalTime;
+
+        const winners = statsArray.filter(s => 
+            s.totalCorrect === topScore && 
+            s.firstPlaceCount === topFirstPlaces && 
+            s.totalTime === topTime
+        );
+
+        if (winners.length > 1) {
+            if(winnerNameEl) winnerNameEl.innerText = winners.map(w => w.username).join(' & ');
+            if(winnerStatsEl) winnerStatsEl.innerText = `Tie! Total Correct: ${topScore}`;
+        } else {
+            if(winnerNameEl) winnerNameEl.innerText = winners[0].username;
+            if(winnerStatsEl) winnerStatsEl.innerText = `Total Correct: ${topScore}`;
+        }
     } else {
         if(winnerNameEl) winnerNameEl.innerText = "No Winner";
         if(winnerStatsEl) winnerStatsEl.innerText = "No correct answers";
@@ -323,5 +339,9 @@ function endQuiz() {
 }
 
 function requestFinalResults() {
+    if (currentQuestionIndex < questionsList.length) {
+        alert("Please finish all questions before declaring the winner!");
+        return;
+    }
     socket.emit('request-final-results', joinCode);
 }

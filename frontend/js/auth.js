@@ -1,4 +1,4 @@
-const API_BASE = `https://quiz-application-backend-1jiq.onrender.com/api`;
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : 'https://quiz-application-production-c0e1.up.railway.app/api';
 
 // --- Auth Toggle & UI ---
 
