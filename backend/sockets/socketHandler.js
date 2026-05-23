@@ -22,6 +22,10 @@ const socketHandler = (io) => {
         return;
       }
 
+      console.log(
+        `[JOIN REQUEST] role=${role} username=${username} joinCode=${joinCode}`,
+      );
+
       socket.join(joinCode);
 
       socket.data.username = username;
