@@ -96,6 +96,10 @@ const socketHandler = (io) => {
     // SUBMIT ANSWER
     socket.on("submit-answer", async (data) => {
       try {
+        console.log("================================");
+        console.log("ANSWER RECEIVED");
+        console.log(data);
+
         const result = await evaluateAnswer({
           data,
           socket,
@@ -103,8 +107,13 @@ const socketHandler = (io) => {
           activeQuestions,
         });
 
-        // wrong answer
-        if (!result) return;
+        console.log("EVALUATION RESULT:");
+        console.log(result);
+
+        if (!result) {
+          console.log("Answer rejected");
+          return;
+        }
 
         const leaderboard = updateLeaderboard({
           result,
@@ -112,16 +121,24 @@ const socketHandler = (io) => {
           userStats,
         });
 
-        // SEND TOP 10 LEADERBOARD
+        console.log("LEADERBOARD GENERATED:");
+        console.log(JSON.stringify(leaderboard, null, 2));
+
         io.to(data.joinCode).emit("leaderboard-update", leaderboard);
 
-        // SEND ANSWER ONLY TO ADMIN
+        console.log(`leaderboard-update emitted to room ${data.joinCode}`);
+
         const adminSocketId = quizAdmins[data.joinCode];
+
         if (adminSocketId) {
           io.to(adminSocketId).emit("answer-received", result);
+
+          console.log("answer-received sent to admin");
         }
+
+        console.log("================================");
       } catch (error) {
-        console.log(error.message);
+        console.error("SUBMIT ANSWER ERROR:", error);
       }
     });
 

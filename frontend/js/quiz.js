@@ -1,3 +1,5 @@
+console.log("QUIZ JS STARTED");
+alert("QUIZ JS STARTED");
 const hostname = window.location.hostname;
 const isLocal =
   hostname === "localhost" ||
@@ -98,6 +100,12 @@ if (isAdmin) {
 }
 
 socket.on("connect", () => {
+  console.log("========== ADMIN DEBUG ==========");
+  console.log("isAdmin =", isAdmin);
+  console.log("quizIdParam =", quizIdParam);
+  console.log("joinCode =", joinCode);
+  console.log("socket.id =", socket.id);
+  console.log("================================");
   if (isAdmin) {
     currentQuizId = quizIdParam;
 
@@ -116,22 +124,22 @@ socket.on("connect", () => {
           return res.json();
         })
         .then((data) => {
+          console.log("Quiz API Response:", data);
+
           if (data.content) {
             questionsList = data.content.questions;
-            // Update subtitle with question count
-            const subtitle = document.getElementById("lobby-subtitle");
-            if (subtitle) {
-              subtitle.innerHTML = `Join Code: <span style="color: var(--primary); font-weight: 800;">${data.content.joinCode}</span> | Questions: ${questionsList.length}`;
-            }
+
             activeJoinCode = data.content.joinCode;
 
-            console.log("[ADMIN JOINING ROOM]", activeJoinCode);
+            console.log("ADMIN JOINING ROOM:", activeJoinCode);
 
             socket.emit("join-quiz", {
               joinCode: activeJoinCode,
               username: user?.username || "Admin",
               role: "admin",
             });
+
+            console.log("join-quiz emitted successfully");
           }
         })
         .catch((err) => {
@@ -229,7 +237,14 @@ socket.on("new-question", (question) => {
 });
 
 socket.on("leaderboard-update", ({ top10, userStats }) => {
-  // Render current question speed stats
+  console.log("LEADERBOARD UPDATE RECEIVED");
+
+  console.log("TOP10:");
+  console.log(top10);
+
+  console.log("USER STATS:");
+  console.log(userStats);
+
   renderCurrentQuestionLeaderboard(top10);
 });
 
@@ -325,6 +340,7 @@ function disableAllOptions() {
 }
 
 function renderCurrentQuestionLeaderboard(top10) {
+  console.log("Rendering leaderboard:", top10);
   const list = document.getElementById("leaderboard-list");
   if (!list) return;
   list.innerHTML = "";
