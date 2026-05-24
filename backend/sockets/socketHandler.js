@@ -33,10 +33,12 @@ const socketHandler = (io) => {
 
       if (role !== "admin") {
         const existing = quizParticipants[joinCode].find(
-          (p) => p.socketId === socket.id,
+          (p) => p.username === username,
         );
 
-        if (!existing) {
+        if (existing) {
+          existing.socketId = socket.id;
+        } else {
           quizParticipants[joinCode].push({
             username,
             socketId: socket.id,
